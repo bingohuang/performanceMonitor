@@ -210,24 +210,27 @@ public class PerformanceMonitor {
 		}
 
 		try {
-			if (intervalTraff == -1) {
-				bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
-						+ processCpuRatio + "," + totalCpuRatio + "," + "本程序或本设备不支持流量统计" + "," + currentBatt + "," + temperature + "," + voltage
-						+ "\r\n");
-			} else {
-				bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
-						+ processCpuRatio + "," + totalCpuRatio + "," + intervalTraff + "," + currentBatt + "," + temperature + "," + voltage
-						+ "\r\n");
+			// 当应用的cpu使用率大于0时才写入文件中，过滤掉异常数据
+			if (isDouble(processCpuRatio) && isDouble(totalCpuRatio)) {
+				if (intervalTraff == -1) {
+					bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
+							+ processCpuRatio + "," + totalCpuRatio + "," + "本程序或本设备不支持流量统计" + "," + currentBatt + "," + temperature + "," + voltage
+							+ "\r\n");
+				} else {
+					bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
+							+ processCpuRatio + "," + totalCpuRatio + "," + intervalTraff + "," + currentBatt + "," + temperature + "," + voltage
+							+ "\r\n");
+				}
+				bw.flush();
+				Log.i(LOG_TAG, "*** writePerformanceData on " + mDateTime + " *** ");
+				processCpu2 = processCpu1;
+				idleCpu2 = idleCpu1;
+				totalCpu2 = totalCpu1;
 			}
-			bw.flush();
-			Log.i(LOG_TAG, "*** writePerformanceData on " + mDateTime + " *** ");
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
-		processCpu2 = processCpu1;
-		idleCpu2 = idleCpu1;
-		totalCpu2 = totalCpu1;
 	}
 
 	private Runnable task = new Runnable() {
@@ -288,6 +291,21 @@ public class PerformanceMonitor {
 		context.unregisterReceiver(receiver);
 		isRunnableStop = true;
 		closeOpenedStream();
+	}
+
+	/**
+	 * 判断text是否是一个double类型数据
+	 * 
+	 * @param text
+	 * @return
+	 */
+	private boolean isDouble(String text) {
+		try {
+			Double.parseDouble(text);
+		} catch (NumberFormatException e) {
+			return false;
+		}
+		return true;
 	}
 
 	/**
