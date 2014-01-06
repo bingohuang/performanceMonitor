@@ -211,7 +211,7 @@ public class PerformanceMonitor {
 
 		try {
 			// 当应用的cpu使用率大于0时才写入文件中，过滤掉异常数据
-			if (isDouble(processCpuRatio) && isDouble(totalCpuRatio)) {
+			if (isPositive(processCpuRatio) && isPositive(totalCpuRatio)) {
 				if (intervalTraff == -1) {
 					bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
 							+ processCpuRatio + "," + totalCpuRatio + "," + "本程序或本设备不支持流量统计" + "," + currentBatt + "," + temperature + "," + voltage
@@ -294,18 +294,19 @@ public class PerformanceMonitor {
 	}
 
 	/**
-	 * 判断text是否是一个double类型数据
+	 * is text a positive number
 	 * 
 	 * @param text
 	 * @return
 	 */
-	private boolean isDouble(String text) {
+	private boolean isPositive(String text) {
+		Double num;
 		try {
-			Double.parseDouble(text);
+			num = Double.parseDouble(text);
 		} catch (NumberFormatException e) {
 			return false;
 		}
-		return true;
+		return num >= 0;
 	}
 
 	/**
