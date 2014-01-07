@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PerformanceMonitor" default="build" basedir=".">
+
+        <property name="src" value="src" />
+        <property name="classes" value="classes" />
+        <property name="jarFile" value="PerformanceMonitor.jar" /> 
+        
+        
+        <!-- libs包下的jar包和android目录下的jar包，后续可以改进用环境变量来替代 -->
+        <path id="Referenced libs" >
+		<fileset dir="libs" >
+		    <include name="*.jar" />
+		</fileset>
+    	</path>
+
+        <target name="clean" description="清除目录和jar文件">
+                <delete dir="${classes}" />
+                <delete file="${jarFile}"/>
+        </target>
+        
+        <target name="init" depends="clean" description="新建目录">
+                <mkdir dir="${classes}"/>
+        </target>
+
+        <target name="compile" depends="init" description="编译src和gen两个源目录下的源文件到class目录下">
+                <javac srcdir="${src}" destdir="${classes}">
+                 	<classpath refid="Referenced libs" />
+                 	<compilerarg line="-encoding UTF-8 " />
+                </javac>
+        </target>
+
+        <target name="build" depends="compile" description="只选择我们需要的class文件打成jar包">
+	 	<jar destfile="${jarFile}">
+	   		<fileset dir="${classes}"/>
+	    		<fileset dir="${src}"/>
+	  	</jar>
+        </target>
+
+
+
+</project>
