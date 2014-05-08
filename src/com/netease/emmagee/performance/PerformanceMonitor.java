@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.List;
 
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.content.BroadcastReceiver;
@@ -159,7 +161,7 @@ public class PerformanceMonitor {
 				bw = new BufferedWriter(osw);
 				// 生成头文件
 				bw.write("测试用例信息" + "," + "时间" + "," + "应用占用内存PSS(MB)" + "," + "应用占用内存比(%)" + "," + " 机器剩余内存(MB)" + "," + "应用占用CPU率(%)" + ","
-						+ "CPU总使用率(%)" + "," + "流量(KB)" + "," + "当前电量" + "," + "电池温度(C)" + "," + "电压(V)" + "\r\n");
+						+ "CPU总使用率(%)" + "," + "流量(KB)" + "," + "当前电量" + "," + "电池温度(C)" + "," + "电压(V)" + "," + "当前Activity数量" + "," + "当前Activity详情" + "\r\n");
 				bw.flush();
 			} else {
 				out = new FileOutputStream(resultFile, true); // 在文件内容后继续加内容
@@ -172,11 +174,11 @@ public class PerformanceMonitor {
 
 		Log.d(LOG_TAG, "end write report");
 	}
-
+	
 	/**
 	 * write data into certain file
 	 */
-	public void writePerformanceData(String mDateTime) {
+	public void writePerformanceData(String mDateTime, ArrayList<Activity> activities) {
 		if (isInitialStatic) {
 			// 创建相应的性能数据报告
 			creatReport(toolName, mDateTime);
@@ -212,14 +214,24 @@ public class PerformanceMonitor {
 		try {
 			// 当应用的cpu使用率大于0时才写入文件中，过滤掉异常数据
 			if (isPositive(processCpuRatio) && isPositive(totalCpuRatio)) {
+				// Added: 加入当前Activity的数量和Activity详情
+				int size = (activities == null) ? 0 : activities.size();
+				String activityNames = "";
+				// 把Activity Name拼凑起来
+				for(Activity activity : activities) {
+					activityNames += getActivityName(activity) + "|";
+				}
+				// 去掉最后一个"|"
+				activityNames = activityNames.substring(0, activityNames.length() - 1);
+				
 				if (intervalTraff == -1) {
 					bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
 							+ processCpuRatio + "," + totalCpuRatio + "," + "本程序或本设备不支持流量统计" + "," + currentBatt + "," + temperature + "," + voltage
-							+ "\r\n");
+							+ "," + size + "," + activityNames + "\r\n");
 				} else {
 					bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
 							+ processCpuRatio + "," + totalCpuRatio + "," + intervalTraff + "," + currentBatt + "," + temperature + "," + voltage
-							+ "\r\n");
+							+ "," + size + "," + activityNames + "\r\n");
 				}
 				bw.flush();
 				Log.i(LOG_TAG, "*** writePerformanceData on " + mDateTime + " *** ");
@@ -231,6 +243,19 @@ public class PerformanceMonitor {
 			e.printStackTrace();
 		}
 
+	}
+	
+	/**
+	 * 获取当前Activity最简名称，如果有"."，取"."到最后的字符串
+	 * @return
+	 */
+	public String getActivityName(Activity activity) {
+		String activityName = activity.getLocalClassName();
+		int index = activityName.lastIndexOf(".");
+		if(index != -1) {
+			activityName = activityName.substring(index + 1);
+		}
+		return activityName;
 	}
 
 	private Runnable task = new Runnable() {
