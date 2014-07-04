@@ -222,7 +222,9 @@ public class PerformanceMonitor {
 					activityNames += getActivityName(activity) + "|";
 				}
 				// 去掉最后一个"|"
-				activityNames = activityNames.substring(0, activityNames.length() - 1);
+				if (activityNames.length() > 0) {
+					activityNames = activityNames.substring(0, activityNames.length() - 1);
+				}
 				
 				if (intervalTraff == -1) {
 					bw.write(this.getTestCaseInfo() + "-" + this.getActionInfo() + "," + mDateTime + "," + pss + "," + percent + "," + freeMem + ","
