@@ -273,7 +273,6 @@ public class PerformanceMonitor {
 	/**
 	 * 电量广播类
 	 * 
-	 * @author hz_liuxiao@corp.netease.com
 	 * 
 	 */
 	public class BatteryInfoBroadcastReceiver extends BroadcastReceiver {
